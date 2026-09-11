@@ -1,0 +1,20 @@
+name = "Forgive"
+version = "0.1.0"
+defaultTargets = ["Forgive", "forgive"]
+
+[leanOptions]
+pp.unicode.fun = true
+weak.linter.flexible = true
+weak.linter.refine = true
+weak.linter.oldObtain = true
+weak.linter.style.multiGoal = true
+
+[[lean_lib]]
+name = "Forgive"
+
+# `lake exe forgive audit <ROOT>…`: the axiom audit of a built library against an allowlist.
+# The library imports only `Lean`, so building it costs nothing beyond the toolchain.
+[[lean_exe]]
+name = "forgive"
+root = "Main"
+supportInterpreter = true
