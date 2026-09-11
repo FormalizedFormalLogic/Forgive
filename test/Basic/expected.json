@@ -1,0 +1,41 @@
+{
+  "allowed": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "audited": 4,
+  "axiomsUsed": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound",
+    "TestLib.add_comm'"
+  ],
+  "debt": [
+    {
+      "axiom": "TestLib.add_comm'",
+      "dependents": 1
+    }
+  ],
+  "forgiveErrors": [],
+  "forgiveFile": "forgive.yml",
+  "forgiven": [
+    {
+      "axioms": [
+        "TestLib.add_comm'"
+      ],
+      "declaration": "TestLib.add_comm'"
+    },
+    {
+      "axioms": [
+        "TestLib.add_comm'"
+      ],
+      "declaration": "TestLib.uses_add_comm'"
+    }
+  ],
+  "ok": true,
+  "roots": [
+    "TestLib"
+  ],
+  "violations": []
+}

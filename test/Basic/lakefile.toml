@@ -1,0 +1,10 @@
+name = "ForgiveTestBasic"
+defaultTargets = ["TestLib"]
+
+# A downstream package, required by path, so the audit runs the way a user runs it.
+[[require]]
+name = "Forgive"
+path = "../.."
+
+[[lean_lib]]
+name = "TestLib"

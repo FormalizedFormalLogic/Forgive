@@ -6,7 +6,7 @@
    "name": "Forgive",
    "manifestFile": "lake-manifest.json",
    "inherited": false,
-   "dir": "..",
+   "dir": "../..",
    "configFile": "lakefile.toml"},
   {"url": "https://github.com/leanprover/lean4-cli",
    "type": "git",
@@ -18,6 +18,6 @@
    "inputRev": "v4.33.0",
    "inherited": true,
    "configFile": "lakefile.toml"}],
- "name": "ForgiveTest",
+ "name": "ForgiveTestViolation",
  "lakeDir": ".lake",
  "fixedToolchain": false}

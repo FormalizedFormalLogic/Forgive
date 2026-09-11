@@ -2,13 +2,6 @@ name = "Forgive"
 version = "0.1.0"
 defaultTargets = ["Forgive", "forgive"]
 
-[leanOptions]
-pp.unicode.fun = true
-weak.linter.flexible = true
-weak.linter.refine = true
-weak.linter.oldObtain = true
-weak.linter.style.multiGoal = true
-
 [[require]]
 name = "Cli"
 scope = "leanprover"
@@ -17,8 +10,6 @@ version = "git#v4.33.0"
 [[lean_lib]]
 name = "Forgive"
 
-# `lake exe forgive audit <ROOT>…`: the axiom audit of a built library against an allowlist.
-# The library imports `Lean` and lean4-cli, so building it costs nothing beyond the toolchain.
 [[lean_exe]]
 name = "forgive"
 root = "Main"

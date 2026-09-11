@@ -1,0 +1,7 @@
+version: v0
+
+# `TestLib.add_comm'` is deliberately left out: the audit must report it.
+accept:
+  - propext
+  - Quot.sound
+  - Classical.choice

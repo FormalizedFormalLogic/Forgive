@@ -1,2 +1,3 @@
 /.lake
-/test/.lake
+
+/test/**/.lake

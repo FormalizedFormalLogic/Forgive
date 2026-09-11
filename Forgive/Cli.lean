@@ -1,5 +1,5 @@
 import Cli
-import Forgive.Render
+import Forgive
 
 /-!
 # The command line
@@ -9,60 +9,15 @@ open Lean Cli
 
 namespace Forgive.Cli
 
-/-- A declaration or axiom name, such as `Classical.choice` or `sorryAx`. -/
-def DeclName := Lean.Name
-  deriving Inhabited, BEq, Repr, ToString
-
-instance : ParseableType DeclName where
-  name     := "Name"
-  parse? s :=
-    let n := s.toName
-    if n.isAnonymous then none else some n
-
-private def declName (n : DeclName) : Name := n
-
 private def moduleName (m : ModuleName) : Name := m
 
-private def names (p : Parsed) (flag : String) : Option (List Name) :=
-  p.flag? flag |>.map fun f => (f.as! (Array DeclName)).toList.map declName
-
-/-- The flags `audit` and `lint` share. -/
-private def commonConfig (p : Parsed) : Config :=
-  let cfg : Config := { forgiveFile := p.flag! "forgive" |>.as! String }
-  let cfg := match names p "allow" with
-    | some ns => { cfg with allowed := ns }
-    | none => cfg
-  match names p "forbid" with
-  | some ns => { cfg with forbidden := ns }
-  | none => cfg
-
-private def auditConfig (p : Parsed) : Config :=
-  { commonConfig p with
+private def config (p : Parsed) : Config :=
+  { forgiveFile := p.flag! "forgive" |>.as! String
     roots := (p.variableArgsAs! ModuleName).map moduleName
     imports := match p.flag? "import" with
       | some f => (f.as! (Array ModuleName)).map moduleName
       | none => #[]
     jsonFile? := (p.flag? "json").map fun f => (f.as! String : System.FilePath) }
-
-/-! ## The commands -/
-
-/-- Check the allowlist alone: that it parses, and that it forgives nothing forbidden. -/
-def runLint (cfg : Config) : IO UInt32 := do
-  if !(← cfg.forgiveFile.pathExists) then
-    IO.println s!"forgive: no allowlist at {cfg.forgiveFile}; nothing to check"
-    return 0
-  let fg ← match ← Forgiveness.read cfg.forgiveFile with
-    | .ok fg => pure fg
-    | .error msg =>
-      IO.eprintln s!"forgive: {msg}"
-      return 1
-  let errs := forbiddenErrors cfg fg
-  if errs.isEmpty then
-    IO.println s!"forgive: {cfg.forgiveFile}: ok ({fg.entries.size} entry(s))"
-    return 0
-  IO.eprintln s!"forgive: {errs.size} problem(s) in {cfg.forgiveFile}:"
-  for e in errs do IO.eprintln s!"  {e}"
-  return 1
 
 /-- Load the roots and audit them. -/
 def runAudit (cfg : Config) : IO UInt32 := do
@@ -72,6 +27,7 @@ def runAudit (cfg : Config) : IO UInt32 := do
       writeReport cfg (errorJson cfg msg)
       IO.eprintln s!"forgive: {msg}"
       return 1
+  let cfg := cfg.accepting fg
   let result ← try
       pure (Except.ok (← Forgive.run cfg fg))
     catch e => pure (Except.error (toString e))
@@ -108,26 +64,22 @@ def runAudit (cfg : Config) : IO UInt32 := do
     return 0
   return 1
 
-private def runAuditCmd (p : Parsed) : IO UInt32 := do
-  let cfg := auditConfig p
+private def runForgive (p : Parsed) : IO UInt32 := do
+  let cfg := config p
   if cfg.roots.isEmpty then
-    IO.eprintln "forgive: `audit` needs at least one root module"
+    IO.eprintln "forgive: expected at least one root module"
     return 2
   runAudit cfg
 
-private def runLintCmd (p : Parsed) : IO UInt32 :=
-  runLint (commonConfig p)
-
-def auditCmd : Cmd := `[Cli|
-  audit VIA runAuditCmd;
-  "Audit every declaration defined under <ROOT>... against the allowlist. It reads the oleans, \
-   so run it through lake after a build: `lake exe forgive audit MyLib`."
+def forgiveCmd : Cmd := `[Cli|
+  forgive VIA runForgive; ["0.1.0"]
+  "Audit the axioms every declaration defined under <ROOT>... uses, against an allowlist. It \
+   reads the oleans, so run it through lake after a build: `lake exe forgive MyLib`. Exits 0 \
+   when clean, 1 on violations or problems in the allowlist, and 2 on bad usage or an \
+   environment that failed to load."
 
   FLAGS:
     f, forgive : String;         "The allowlist; a missing file forgives nothing."
-    allow : Array DeclName;      "The axioms every declaration may use, replacing the default \
-                                  `propext,Classical.choice,Quot.sound`."
-    forbid : Array DeclName;     "Names no allowlist entry may forgive, e.g. `sorryAx`."
     "import" : Array ModuleName; "The modules to load instead of the roots."
     json : String;               "Write the JSON report here."
 
@@ -138,30 +90,6 @@ def auditCmd : Cmd := `[Cli|
     defaultValues! #[("forgive", ({} : Config).forgiveFile.toString)]
 ]
 
-def lintCmd : Cmd := `[Cli|
-  lint VIA runLintCmd;
-  "Check the allowlist alone: that it parses, and that it forgives nothing --forbid disallows. \
-   It loads no environment, so it needs no build."
-
-  FLAGS:
-    f, forgive : String;    "The allowlist; a missing file forgives nothing."
-    forbid : Array DeclName; "Names no allowlist entry may forgive, e.g. `sorryAx`."
-
-  EXTENSIONS:
-    defaultValues! #[("forgive", ({} : Config).forgiveFile.toString)]
-]
-
-def forgiveCmd : Cmd := `[Cli|
-  forgive NOOP; ["0.1.0"]
-  "Audit the axioms a Lean library uses, against an allowlist. Exits 0 when clean, 1 on \
-   violations or problems in the allowlist, and 2 on bad usage or an environment that failed \
-   to load."
-
-  SUBCOMMANDS:
-    auditCmd;
-    lintCmd
-]
-
 /-- The entry point; unlike `Cmd.validate`, bad usage exits 2. -/
 def main (args : List String) : IO UInt32 := do
   match forgiveCmd.process args with
@@ -169,13 +97,9 @@ def main (args : List String) : IO UInt32 := do
     if p.hasFlag "help" then
       p.printHelp
       return 0
-    if p.cmd.meta.hasVersion && p.hasFlag "version" then
+    if p.hasFlag "version" then
       p.printVersion!
       return 0
-    if !p.hasParent then
-      IO.eprintln "forgive: expected a command: `audit` or `lint`"
-      p.printHelp
-      return 2
     cmd.run p
   | .error (cmd, err) =>
     cmd.printError err
