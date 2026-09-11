@@ -18,11 +18,13 @@ permissions:
 
 jobs:
   build:
-    name: Build and audit itself
+    name: Build, audit, and test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: leanprover/lean-action@v1
       # The audit's own declarations must stay inside the three allowed axioms.
       - name: Audit itself
-        run: lake exe forgive audit Forgive --no-json --no-markdown
+        run: lake exe forgive audit Forgive
+      - name: Test the command line
+        run: test/run.sh

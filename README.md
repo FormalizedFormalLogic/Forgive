@@ -37,11 +37,7 @@ is a root or one of its submodules.
                            propext,Classical.choice,Quot.sound
     --forbid <NAME,...>    names no allowlist entry may forgive, e.g. sorryAx
     --import <MODULE,...>  the modules to load instead of the roots
-    --json <FILE>          where the JSON report goes (default: .lake/audit.json)
-    --markdown <FILE>      where the Markdown report goes (default: .lake/audit.md)
-    --no-json              write no JSON report
-    --no-markdown          write no Markdown report
-    --title <TEXT>         the heading of the Markdown report (default: Axiom audit)
+    --json <FILE>          write the JSON report here; without it, none is written
 ```
 
 The command line is [lean4-cli](https://github.com/leanprover/lean4-cli)'s, so a flag that takes
@@ -86,12 +82,17 @@ of scalars (`forgive: [a, b]`), one layer of quoting, and `#` comments.
 lake exe forgive lint --forbid sorryAx
 ```
 
-## The reports
+## The JSON report
 
-`audit` writes a machine-readable `.lake/audit.json` and a `.lake/audit.md` meant to be posted as
-a single pull-request comment. Besides the violations and the allowlist problems, the Markdown
-report ranks the library's own unproved statements by how many audited declarations reach them.
-The forgiven table is capped at 150 rows, since GitHub rejects a comment over 65536 characters.
+`--json <FILE>` writes the whole result as JSON: the violations, the allowlist problems, the
+declarations forgiven, and `debt`, the library's own unproved statements ranked by how many
+audited declarations reach them. Rendering it is the caller's business.
+
+## Tests
+
+`test/` is a small package that requires this one by path, so the executable is exercised the way
+a user runs it. `test/run.sh` builds the fixture library and checks the output and the exit code
+of every subcommand and flag.
 
 ## As a library
 

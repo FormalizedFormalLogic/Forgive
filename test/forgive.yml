@@ -1,0 +1,8 @@
+version: v0
+
+TestLib.add_comm':
+  forgive:
+    - TestLib.add_comm'
+TestLib.uses_add_comm':
+  forgive:
+    - TestLib.add_comm'
