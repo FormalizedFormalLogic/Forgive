@@ -1,6 +1,16 @@
 {"version": "1.2.0",
  "packagesDir": ".lake/packages",
- "packages": [],
+ "packages":
+ [{"url": "https://github.com/leanprover/lean4-cli",
+   "type": "git",
+   "subDir": null,
+   "scope": "leanprover",
+   "rev": "6130a47896ce867c6a4a55373441e59e565bad0f",
+   "name": "Cli",
+   "manifestFile": "lake-manifest.json",
+   "inputRev": "v4.33.0",
+   "inherited": false,
+   "configFile": "lakefile.toml"}],
  "name": "Forgive",
  "lakeDir": ".lake",
  "fixedToolchain": false}

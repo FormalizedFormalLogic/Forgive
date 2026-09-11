@@ -32,17 +32,21 @@ Run it through `lake`, which puts the built library on `LEAN_PATH`. Several root
 is a root or one of its submodules.
 
 ```
--f, --forgive <FILE>   the allowlist (default: forgive.yml); a missing file forgives nothing
-    --allow <NAME>     an axiom every declaration may use. Repeatable; the first use
-                       replaces the default propext, Classical.choice, Quot.sound
-    --forbid <NAME>    a name no allowlist entry may forgive, e.g. sorryAx. Repeatable
-    --import <MODULE>  a module to load instead of the roots. Repeatable
-    --json <FILE>      where the JSON report goes (default: .lake/audit.json)
-    --markdown <FILE>  where the Markdown report goes (default: .lake/audit.md)
-    --no-json          write no JSON report
-    --no-markdown      write no Markdown report
-    --title <TEXT>     the heading of the Markdown report (default: Axiom audit)
+-f, --forgive <FILE>       the allowlist (default: forgive.yml); a missing file forgives nothing
+    --allow <NAME,...>     the axioms every declaration may use; replaces the default
+                           propext,Classical.choice,Quot.sound
+    --forbid <NAME,...>    names no allowlist entry may forgive, e.g. sorryAx
+    --import <MODULE,...>  the modules to load instead of the roots
+    --json <FILE>          where the JSON report goes (default: .lake/audit.json)
+    --markdown <FILE>      where the Markdown report goes (default: .lake/audit.md)
+    --no-json              write no JSON report
+    --no-markdown          write no Markdown report
+    --title <TEXT>         the heading of the Markdown report (default: Axiom audit)
 ```
+
+The command line is [lean4-cli](https://github.com/leanprover/lean4-cli)'s, so a flag that takes
+several values takes them comma-separated (`--allow propext,Quot.sound`), a value may be attached
+with `=`, and `forgive -h`, `forgive audit -h`, and `forgive lint -h` print the help.
 
 It exits `0` when clean, `1` on violations or problems in the allowlist, and `2` on bad usage or
 an environment that failed to load.
